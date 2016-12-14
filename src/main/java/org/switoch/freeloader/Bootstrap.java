@@ -8,6 +8,7 @@ import org.switoch.freeloader.service.Food;
 import org.switoch.freeloader.service.Pet;
 import org.switoch.freeloader.service.Storage;
 import org.switoch.freeloader.service.Watcher;
+import org.switoch.freeloader.service.WaterTank;
 
 public class Bootstrap {
 
@@ -17,6 +18,7 @@ public class Bootstrap {
 
 		Farm farm = Farm.getTestFarm();
 		Storage storage = Storage.getTestStorage();
+		WaterTank waterTank = new WaterTank(30);
 
 		// Feeding
 
@@ -32,7 +34,7 @@ public class Bootstrap {
 			System.out.println(pet.toString());
 			Food food = foodByPerTypeMap.get(pet.getType());
 			if (food != null) {
-				watcher.feed(pet, food);
+				watcher.feed(pet, food, waterTank);
 			} else {
 				System.out.println("Food for " + pet.getType() + " is missed!");
 			}

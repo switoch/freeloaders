@@ -17,11 +17,11 @@ public class Storage {
 	}
 	
 	public static Storage getTestStorage() {
-		Food fCat = new Food("wiskas", "cat", 5);
-		Food fDog = new Food("dried_chappi", "dog", 5);
-		Food fKitty = new Food("milk", "kitty", 5);
-		Food fPuppy = new Food("wet_chappi", "puppy", 5);
-		Food fFish = new Food("fish_food", "fish", 5);
+		Food fCat = new Food("wiskas", "cat", 5, 1);
+		Food fDog = new Food("dried_chappi", "dog", 5, 2);
+		Food fKitty = new Food("milk", "kitty", 5, 1);
+		Food fPuppy = new Food("wet_chappi", "puppy", 5, 1);
+		Food fFish = new Food("fish_food", "fish", 5, 0);
 		return new Storage(fCat, fDog, fKitty, fPuppy, fFish);
 	}
 
