@@ -1,19 +1,9 @@
 package org.switoch.freeloader.service;
 
-public class WaterTank {
+public class WaterTank extends BaseTank {
 
-	private int volume;
-
-	public WaterTank(int volume) {
+	public WaterTank(double volume) {
 		super();
-		this.volume = volume;
-	}
-
-	public int getVolume() {
-		return volume;
-	}
-
-	public void setVolume(int volume) {
-		this.volume = volume;
+		addVolume(volume);
 	}
 }

@@ -1,7 +1,7 @@
 package org.switoch.freeloader.service;
 
 /**
- * Responsible for next properties: type, satiety weight, name
+ * Responsible for next properties: type, satiety, dirt, weight, name
  */
 public class Pet {
 
@@ -9,11 +9,20 @@ public class Pet {
 	private int satiety;
 	private int weight;
 	private String name;
+	private int dirt;
 
 	public Pet(String type) {
 		super();
 		this.type = type;
 		this.satiety = 0;
+	}
+
+	public int getDirt() {
+		return dirt;
+	}
+
+	public void setDirt(int dirt) {
+		this.dirt = dirt;
 	}
 
 	public String getType() {
@@ -50,7 +59,7 @@ public class Pet {
 
 	@Override
 	public String toString() {
-		return "Pet[type=" + this.type + ", satiety=" + this.satiety + "]";
+		return "Pet[type=" + this.type + ", satiety=" + this.satiety + ", dirt"+ this.dirt + "]";
 	}
 
 }

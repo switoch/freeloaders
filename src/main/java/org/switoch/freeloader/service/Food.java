@@ -46,8 +46,8 @@ public class Food {
 		return count;
 	}
 
-	public void setCount(int count) {
-		this.count = count;
+	public void addCount(int count) {
+		this.count += count;
 	}
 
 }
