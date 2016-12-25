@@ -3,14 +3,11 @@ package org.switoch.freeloader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.switoch.freeloader.service.BaseTank;
 import org.switoch.freeloader.service.Farm;
 import org.switoch.freeloader.service.Food;
-import org.switoch.freeloader.service.GarbageTank;
 import org.switoch.freeloader.service.Pet;
 import org.switoch.freeloader.service.Storage;
 import org.switoch.freeloader.service.Watcher;
-import org.switoch.freeloader.service.WaterTank;
 
 public class Bootstrap {
 
@@ -20,15 +17,13 @@ public class Bootstrap {
 
 		Farm farm = Farm.getTestFarm();
 		Storage storage = Storage.getTestStorage();
-		BaseTank waterTank = new WaterTank(30);
-		GarbageTank garbageTank = new GarbageTank(10);
 
 		// Feeding
 
 		Watcher watcher = new Watcher();
 
-		watcher.setWaterTank(waterTank);
-		watcher.setGarbageTank(garbageTank);
+		watcher.setWaterTank(storage.getWaterTank());
+		watcher.setGarbageTank(storage.getGarbageTank());
 		
 		// Indexing between a pet type and a food for it
 		Map<String, Food> foodByPerTypeMap = new HashMap<>();
@@ -45,7 +40,7 @@ public class Bootstrap {
 				System.out.println("Food for " + pet.getType() + " is missed!");
 			}
 			System.out.println(pet.toString());
-			watcher.clean(pet, garbageTank);
+			watcher.clean(pet, storage.getGarbageTank());
 			System.out.println(pet.toString());
 		}
 	}
