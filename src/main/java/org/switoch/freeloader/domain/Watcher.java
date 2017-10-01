@@ -1,13 +1,19 @@
 package org.switoch.freeloader.domain;
 
+import org.switoch.freeloader.domain.util.BaseTank;
+
 /**
  * Responsible for pets feeding
  */
 public class Watcher {
 
 	private static final int FOOD_AMOUNT_PER_FEED = 1;
+
 	private BaseTank waterTank;
+
 	private GarbageTank garbageTank;
+	
+	private int fatigue;
 
 	/**
 	 * Allows to feed a pet with specified food
@@ -58,6 +64,11 @@ public class Watcher {
 	public void setGarbageTank(GarbageTank garbageTank) {
 		this.garbageTank = garbageTank;
 
+	}
+
+	public void incrementFatigue(int fatigue) {
+		this.fatigue = fatigue + FOOD_AMOUNT_PER_FEED;
+		
 	}
 
 }

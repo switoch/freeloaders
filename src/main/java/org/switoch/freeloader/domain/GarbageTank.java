@@ -1,5 +1,7 @@
 package org.switoch.freeloader.domain;
 
+import org.switoch.freeloader.domain.util.BaseTank;
+
 public class GarbageTank extends BaseTank {
 
 	private double maxVolume;

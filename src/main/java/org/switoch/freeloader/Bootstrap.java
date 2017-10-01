@@ -1,82 +1,139 @@
 package org.switoch.freeloader;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import org.apache.log4j.Logger;
+import org.switoch.freeloader.command.Command;
+import org.switoch.freeloader.command.CommandFeedPet;
+import org.switoch.freeloader.dao.FarmDao;
 import org.switoch.freeloader.dao.FarmDaoLocal;
 import org.switoch.freeloader.domain.Farm;
-import org.switoch.freeloader.domain.Food;
 import org.switoch.freeloader.domain.Pet;
-import org.switoch.freeloader.domain.Storage;
-import org.switoch.freeloader.domain.Watcher;
+import org.switoch.freeloader.service.FarmMaintenanceService;
+import org.switoch.freeloader.service.FarmMaintenanceServiceDefault;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Bootstrap {
 
-	public static void main(String[] args) throws JsonParseException, JsonMappingException, IOException {
+	private static Logger logger = Logger.getLogger(Bootstrap.class);
 
-		// Definition
+	private static FarmDao farmDao = new FarmDaoLocal();
 
-		// read farm from farm.json, if null Farm.getTestFarm();
-		
-		//Farm farm = null;
-		Storage storage = null;
+	private static FarmMaintenanceService farmMaintenanceService = new FarmMaintenanceServiceDefault();
 
-		Farm farm = FarmDaoLocal.loadFromJson();
-		// try {
-		// ObjectMapper om = new ObjectMapper();
-		// Pet[] pets = om.readValue(new FileInputStream("farm.json"),
-		// Pet[].class);
-		// farm = new Farm(pets);
-		// } catch (FileNotFoundException e) {
-		// farm = Farm.getTestFarm();
-		// }
-		//
-		 try {
-		 ObjectMapper om = new ObjectMapper();
-		 Food[] food = om.readValue(new FileInputStream("storage.json"),
-		 Food[].class);
-		 storage = new Storage(food);
-		 } catch (FileNotFoundException e) {
-		 storage = Storage.getTestStorage();
-		 }
+	public static void main(String[] args)
+			throws JsonParseException, JsonMappingException, IOException, InterruptedException {
 
-		// Feeding
+		logger.info("Server started");
 
-		Watcher watcher = new Watcher();
+		logger.debug("Farm state loading...");
+		Farm farm = farmDao.load();
+		logger.debug("Farm state loaded: pets=" + farm.getPets().size());
+		final Queue<Command> commandQueue = new ConcurrentLinkedQueue<>();
+		ExecutorService executor = Executors.newFixedThreadPool(3);
 
-		watcher.setWaterTank(storage.getWaterTank());
-		watcher.setGarbageTank(storage.getGarbageTank());
+		Runnable taskAdding = new Runnable() { 
 
-		// Indexing between a pet type and a food for it
-		Map<String, Food> foodByPerTypeMap = new HashMap<>();
-		for (Food f : storage.getFoods()) {
-			foodByPerTypeMap.put(f.getPetType(), f);
-		}
-
-		for (Pet pet : farm.getPets()) {
-			System.out.println(pet.toString());
-			Food food = foodByPerTypeMap.get(pet.getType());
-			if (food != null) {
-				watcher.feed(pet, food);
-			} else {
-				System.out.println("Food for " + pet.getType() + " is missed!");
+			@Override
+			public void run() {
+				while (true) {
+					for (int index = 0; index < farm.getPets().size();index++){
+					logger.debug("Adding new feed command for pet " + index + " ...");
+					commandQueue.add(new CommandFeedPet(index));
+					}
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
+						logger.warn("Adding new tasks in queue was stopped");
+						return;
+					}
+				}
+				
 			}
-			System.out.println(pet.toString());
-			watcher.clean(pet, storage.getGarbageTank());
-			System.out.println(pet.toString());
-		}
+		};
+		executor.execute(taskAdding);
 
-		FarmDaoLocal.saveToJson(farm.getPets());
-		 ObjectMapper om = new ObjectMapper();
-		 om.writeValue(new FileOutputStream("storage.json"), storage.getFoods());
+
+		Runnable watcherLifeCycle = new Runnable() {
+
+			@Override
+			public void run() {
+				while (true) {
+					logger.debug("watcher found " + commandQueue.size() + " tasks");
+					while (true) {
+						Command task = commandQueue.poll();
+						if (task == null) {
+							break;
+						}
+						logger.debug("wathcer begins his crazy work!!!!!");
+						farmMaintenanceService.process(task, farm);
+					}
+					try {
+						Thread.sleep(1000);
+						logger.debug("watcher stops his work cause the queue is empty");
+					} catch (InterruptedException e) {
+						logger.warn("Taking new tasks in queue was stopped");
+						return;
+					}
+				}
+			}
+		};
+
+		executor.execute(watcherLifeCycle);
+
+
+		// New scheduler for satiety decrementing
+		Runnable satietyDecrementing = new Runnable() {
+
+			@Override
+			public void run() {
+				while (true) {
+					for (int index = 0; index < farm.getPets().size(); index++) {
+						Pet p = farm.getPets().get(index);
+						if (p.getSatiety() > 0) {
+							logger.debug(String.format("current satiety level is %.1f for pet %d", p.getSatiety(), index));
+							p.addSatiety(-0.1);
+							if (p.getSatiety() < 0.1) {
+								logger.debug("Kaputt");
+							} else if (p.getSatiety() < 0.5) {
+								logger.debug("I'm getting hungry and angry");
+							} else if (p.getSatiety() < 0.7) {
+								logger.debug("I'm getting hungry");
+							}
+						}
+					}
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+
+		executor.execute(satietyDecrementing);
+
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+
+			@Override
+			public void run() {
+				System.out.println("Gracefully shutdown...");
+
+				logger.debug("Shutdown processing executor");
+				executor.shutdown();
+				// watcherExecutor.shutdown();
+
+				logger.debug("Farm state saving...");
+				farmDao.save(farm);
+				logger.debug("Farm state saved");
+			}
+		});
 	}
 
 }

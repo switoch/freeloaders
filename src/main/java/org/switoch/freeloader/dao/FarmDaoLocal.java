@@ -6,7 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.switoch.freeloader.domain.Farm;
-import org.switoch.freeloader.domain.Pet;
+import org.switoch.freeloader.service.util.FarmFactory;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -15,35 +15,39 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class FarmDaoLocal implements FarmDao {
 
-	private final String FOLDER = "C:\\document\\work\\workspace\\ws1\\test5_freeloaders\\";
-
+	private ObjectMapper om = new ObjectMapper();
+	
 	@Override
 	public void save(Farm farm) {
+		try {
+			saveToJson(farm);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public Farm load() {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return loadFromJson();
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
-	public static Farm loadFromJson() throws JsonParseException, JsonMappingException, IOException {
+	public Farm loadFromJson() throws JsonParseException, JsonMappingException, IOException {
 		Farm farm = null;
 		try {
-			ObjectMapper om = new ObjectMapper();
-			Pet[] pets = om.readValue(new FileInputStream("farm.json"), Pet[].class);
-			farm = new Farm(pets);
+			farm = om.readValue(new FileInputStream("farm.json"), Farm.class);
 		} catch (FileNotFoundException e) {
-			farm = Farm.getTestFarm();
+			farm = FarmFactory.getTestFarm();
 		}
 		return farm;
 	}
 
-	public static void saveToJson(Object object)
+	public void saveToJson(Object object)
 			throws JsonGenerationException, JsonMappingException, FileNotFoundException, IOException {
-		ObjectMapper om = new ObjectMapper();
-		//Farm farm = null;
-			om.writeValue(new FileOutputStream("farm.json"), object);
+		om.writeValue(new FileOutputStream("farm.json"), object);
 	}
 
 }

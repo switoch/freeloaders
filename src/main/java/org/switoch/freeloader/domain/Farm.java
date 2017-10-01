@@ -1,37 +1,40 @@
 package org.switoch.freeloader.domain;
 
+import java.util.List;
+
 /**
  * Responsible for the keeping of {@link Pet} instances.
  */
 public class Farm {
 
-	private Pet[] pets;
+	private Storage storage;
+	
+	private Watcher watcher;
+	
+	private List<Pet> pets;
 
-	public Farm(Pet... pets) {
-		super();
-		this.pets = pets;
+	public Storage getStorage() {
+		return storage;
 	}
 
-	public Pet[] getPets() {
+	public void setStorage(Storage storage) {
+		this.storage = storage;
+	}
+
+	public Watcher getWatcher() {
+		return watcher;
+	}
+
+	public void setWatcher(Watcher watcher) {
+		this.watcher = watcher;
+	}
+
+	public List<Pet> getPets() {
 		return pets;
 	}
 
-	public static Farm getTestFarm() {
-		Pet pCat1 = new Pet("cat");
-		//Pet pCat2 = new Pet("cat");
-		Pet pDog = new Pet("dog");
-		Pet pKitty = new Pet("kitty");
-		Pet pPuppy = new Pet("puppy");
-		Pet pFish = new Pet("fish");
-		return new Farm(pCat1, pDog, pKitty, pPuppy, pFish);
+	public void setPets(List<Pet> pets) {
+		this.pets = pets;
 	}
-
-	public static Farm loadFromDB() {
-		// TODO implement later
-		return null;
-	}
-
-	public static void daveToDB(Farm farm) {
-		// TODO implement later
-	}
+	
 }

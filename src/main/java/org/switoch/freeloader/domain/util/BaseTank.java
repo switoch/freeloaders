@@ -1,6 +1,6 @@
-package org.switoch.freeloader.domain;
+package org.switoch.freeloader.domain.util;
 
-public class BaseTank {
+public abstract class BaseTank {
 
 	private double volume;
 

@@ -6,7 +6,7 @@ package org.switoch.freeloader.domain;
 public class Pet {
 
 	private String type;
-	private int satiety;
+	private float satiety;
 	private int weight;
 	private String name;
 	private int dirt;
@@ -36,11 +36,11 @@ public class Pet {
 		this.type = type;
 	}
 
-	public int getSatiety() {
-		return satiety;
+	public float getSatiety() {
+		return this.satiety;
 	}
 
-	public void setSatiety(int satiety) {
+	public void setSatiety(float satiety) {
 		this.satiety = satiety;
 	}
 
@@ -58,6 +58,10 @@ public class Pet {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public void addSatiety(double value){
+		this.satiety += value;
 	}
 
 	@Override
